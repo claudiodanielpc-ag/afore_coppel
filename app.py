@@ -11,7 +11,7 @@ from names_dataset import NameDataset, NameWrapper
 from statsmodels.tsa.arima.model import ARIMA
 
 st.set_page_config(
-    page_title="Leads Afore Coppel",
+    page_title="Interesados Afore Coppel",
     page_icon="📊",
     layout="wide",
 )
@@ -150,7 +150,7 @@ def generar_resumen_ia(total, inscripcion, info, hombres, mujeres,
         max_tokens=300,
         messages=[{"role": "user", "content": (
             f"Eres un analista de datos. Escribe un resumen ejecutivo breve (2-3 oraciones) "
-            f"en español sobre los leads de Afore Coppel del {fecha_ini} al {fecha_fin}. "
+            f"en español sobre los interesados de Afore Coppel del {fecha_ini} al {fecha_fin}. "
             f"Todos los registros son únicos (se omitieron duplicados por correo electrónico):\n"
             f"- Total registros únicos: {total}\n"
             f"- Interesados en inscripción: {inscripcion} ({pct(inscripcion)})\n"
@@ -170,7 +170,7 @@ def generar_resumen_ia(total, inscripcion, info, hombres, mujeres,
     return msg.content[0].text
 
 c1, c2, c3, c4, c5 = st.columns(5)
-c1.metric("Total leads", total)
+c1.metric("Total interesados", total)
 c2.metric("Proceso de inscripción", inscripcion, f"{inscripcion/total*100:.1f}%" if total else "—")
 c3.metric("Solicitar información", info, f"{info/total*100:.1f}%" if total else "—")
 c4.metric("Hombres", hombres, f"{hombres/total*100:.1f}%" if total else "—")
@@ -180,7 +180,7 @@ st.divider()
 
 # ── Leads por hora ────────────────────────────────────────────────────
 
-st.subheader("Leads por hora")
+st.subheader("Interesados por hora")
 
 tipo = st.selectbox(
     "Tipo de interés",
@@ -205,7 +205,7 @@ fig_hora = go.Figure(go.Scatter(
 ))
 fig_hora.update_layout(
     xaxis_title="Hora",
-    yaxis_title="Leads",
+    yaxis_title="Interesados",
     height=320,
     margin=dict(t=10, b=10),
 )
