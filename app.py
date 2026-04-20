@@ -31,7 +31,7 @@ col_logo, col_titulo = st.columns([1, 5])
 with col_logo:
     st.image("logo_ag_transp.png", width=180)
 with col_titulo:
-    st.title("Resultados preliminares de leads de contacto — Afore Coppel")
+    st.title("Resultados preliminares de interesados en oferta académica Academia Global — Afore Coppel")
 
 resumen_placeholder = st.empty()
 
@@ -148,7 +148,9 @@ def generar_resumen_ia(total, inscripcion, info, hombres, mujeres,
             f"- Hombres: {hombres} ({pct(hombres)}), Mujeres: {mujeres} ({pct(mujeres)})\n"
             f"- Correos acumulados con intención de inscripción: {total_obs:.0f}\n"
             f"- Proyección ARIMA a 48h: {total_est:.0f} (incremento esperado: +{incremento:.0f})\n"
-            "Sé directo y profesional. No uses listas, solo prosa."
+            "Sé directo y neutral. No uses listas, solo prosa. "
+            "Evita adjetivos calificativos (como 'significativo', 'notable', 'alto', 'bajo', etc.). "
+            "Limítate a enunciar los resultados sin valorarlos."
         )}]
     )
     return msg.content[0].text
@@ -249,6 +251,7 @@ hombres_g = (df['sexo'] == 'Hombre').sum()
 mujeres_g = (df['sexo'] == 'Mujer').sum()
 
 with resumen_placeholder.container():
+    st.subheader(f"Resumen ejecutivo ({fecha_min} — {fecha_max})")
     with st.spinner("Generando resumen..."):
         resumen = generar_resumen_ia(
             total_g, inscripcion_g, info_g, hombres_g, mujeres_g,
