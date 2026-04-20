@@ -132,12 +132,13 @@ hombres = (df_f['sexo'] == 'Hombre').sum()
 mujeres = (df_f['sexo'] == 'Mujer').sum()
 
 @st.cache_data(ttl=900)
-def generar_resumen_ia(total, inscripcion, info, hombres, mujeres, fecha_ini, fecha_fin):
+def generar_resumen_ia(total, inscripcion, info, hombres, mujeres,
+                       fecha_ini, fecha_fin, total_obs, total_est, incremento):
     client = anthropic.Anthropic(api_key=st.secrets["ANTHROPIC_API_KEY"])
     pct = lambda n: f"{n/total*100:.1f}%" if total else "N/D"
     msg = client.messages.create(
         model="claude-haiku-4-5-20251001",
-        max_tokens=200,
+        max_tokens=250,
         messages=[{"role": "user", "content": (
             f"Eres un analista de datos. Escribe un resumen ejecutivo breve (2-3 oraciones) "
             f"en español sobre los leads de Afore Coppel del {fecha_ini} al {fecha_fin}:\n"
@@ -145,15 +146,12 @@ def generar_resumen_ia(total, inscripcion, info, hombres, mujeres, fecha_ini, fe
             f"- Interesados en inscripción: {inscripcion} ({pct(inscripcion)})\n"
             f"- Solicitan información: {info} ({pct(info)})\n"
             f"- Hombres: {hombres} ({pct(hombres)}), Mujeres: {mujeres} ({pct(mujeres)})\n"
+            f"- Correos acumulados con intención de inscripción: {total_obs:.0f}\n"
+            f"- Proyección ARIMA a 48h: {total_est:.0f} (incremento esperado: +{incremento:.0f})\n"
             "Sé directo y profesional. No uses listas, solo prosa."
         )}]
     )
     return msg.content[0].text
-
-with resumen_placeholder.container():
-    with st.spinner("Generando resumen..."):
-        resumen = generar_resumen_ia(total, inscripcion, info, hombres, mujeres, fecha_inicio, fecha_fin)
-    st.info(resumen)
 
 c1, c2, c3, c4, c5 = st.columns(5)
 c1.metric("Total leads", total)
@@ -243,6 +241,20 @@ pred_ci = forecast.conf_int(alpha=0.05)
 total_obs = por_hora_ac['acumulado'].iloc[-1]
 total_est = pred_mean.iloc[-1]
 incremento = total_est - total_obs
+
+total_g = len(df)
+inscripcion_g = (df['interesado_en'] == 'Iniciar Proceso de inscripción').sum()
+info_g = (df['interesado_en'] == 'Solicitar Información').sum()
+hombres_g = (df['sexo'] == 'Hombre').sum()
+mujeres_g = (df['sexo'] == 'Mujer').sum()
+
+with resumen_placeholder.container():
+    with st.spinner("Generando resumen..."):
+        resumen = generar_resumen_ia(
+            total_g, inscripcion_g, info_g, hombres_g, mujeres_g,
+            fecha_min, fecha_max, total_obs, total_est, incremento,
+        )
+    st.info(resumen)
 
 ca1, ca2, ca3 = st.columns(3)
 ca1.metric("Acumulado actual", f"{total_obs:.0f}")
