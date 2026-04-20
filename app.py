@@ -31,7 +31,7 @@ col_logo, col_titulo = st.columns([1, 5])
 with col_logo:
     st.image("logo_ag_transp.png", width=180)
 with col_titulo:
-    st.title("Resultados preliminares de interesados en oferta académica\nAcademia Global — Afore Coppel")
+    st.title("Resultados preliminares de interesados en oferta académica Academia Global — Afore Coppel")
 
 resumen_placeholder = st.empty()
 
@@ -257,7 +257,7 @@ with resumen_placeholder.container():
             total_g, inscripcion_g, info_g, hombres_g, mujeres_g,
             fecha_min, fecha_max, total_obs, total_est, incremento,
         )
-    st.info(f"**Resumen ejecutivo ({fecha_min} — {fecha_max})**\n\n{resumen}")
+    st.info(f"### **Resumen ejecutivo ({fecha_min} — {fecha_max})**\n\n{resumen}")
 
 ca1, ca2, ca3 = st.columns(3)
 ca1.metric("Acumulado actual", f"{total_obs:.0f}")
