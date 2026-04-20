@@ -368,44 +368,31 @@ META = 1_000
 
 st.subheader("Escenarios de conversión — meta: 1,000 inscritos")
 
-tasa_requerida_actual    = META / total_obs * 100 if total_obs else None
-tasa_requerida_proyectad = META / total_est * 100 if total_est else None
-
-ce1, ce2 = st.columns(2)
-ce1.metric(
-    "Tasa requerida (actual)",
-    f"{tasa_requerida_actual:.1f}%" if tasa_requerida_actual else "—",
-    help="Tasa de conversión necesaria sobre los contactos únicos actuales para llegar a 1,000 inscritos",
+st.info(
+    "**¿Cómo se calcula la tasa de conversión?**  \n"
+    "Se toma el total de contactos únicos que manifestaron intención de inscripción y se multiplica "
+    "por una tasa asumida para estimar cuántos terminarían inscribiéndose:  \n"
+    "**Inscritos estimados = contactos únicos con intención × tasa de conversión**  \n"
+    "La tasa requerida es el valor mínimo que necesitaría alcanzarse para llegar a la meta de 1,000 inscritos."
 )
-ce2.metric(
-    "Tasa requerida (+48h ARIMA)",
-    f"{tasa_requerida_proyectad:.1f}%" if tasa_requerida_proyectad else "—",
-    help="Tasa de conversión necesaria sobre la proyección a 48h para llegar a 1,000 inscritos",
+
+tasa_requerida_actual = META / total_obs * 100 if total_obs else None
+
+st.metric(
+    "Tasa de conversión requerida para alcanzar la meta",
+    f"{tasa_requerida_actual:.1f}%" if tasa_requerida_actual else "—",
 )
 
 ESCENARIOS = [("Pesimista", 0.10), ("Base", 0.25), ("Optimista", 0.40)]
-nombres   = [e[0] for e in ESCENARIOS]
 etiquetas = [f"{e[0]} ({int(e[1]*100)}%)" for e in ESCENARIOS]
 inscritos_actual = [total_obs * t for _, t in ESCENARIOS]
-inscritos_proj   = [total_est  * t for _, t in ESCENARIOS]
 
-fig_esc = go.Figure()
-fig_esc.add_trace(go.Bar(
+fig_esc = go.Figure(go.Bar(
     y=etiquetas,
     x=inscritos_actual,
-    name="Actual",
     orientation='h',
     marker_color='steelblue',
     text=[f"{v:.0f}" for v in inscritos_actual],
-    textposition='outside',
-))
-fig_esc.add_trace(go.Bar(
-    y=etiquetas,
-    x=inscritos_proj,
-    name="Proyección +48h",
-    orientation='h',
-    marker_color='tomato',
-    text=[f"{v:.0f}" for v in inscritos_proj],
     textposition='outside',
 ))
 fig_esc.add_vline(
@@ -416,15 +403,14 @@ fig_esc.add_vline(
     annotation_position="top",
 )
 fig_esc.update_layout(
-    barmode='group',
     xaxis_title="Inscritos estimados",
-    height=320,
+    height=300,
     margin=dict(t=30, b=10, r=80),
-    legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='left', x=0),
+    showlegend=False,
 )
 st.plotly_chart(fig_esc, use_container_width=True)
 
 st.caption(
-    "Los escenarios aplican la tasa de conversión sobre los contactos únicos con intención de inscripción. "
+    f"Basado en {int(total_obs):,} contactos únicos con intención de inscripción. "
     "No representan inscripciones confirmadas."
 )
