@@ -134,7 +134,7 @@ mujeres = (df_f['sexo'] == 'Mujer').sum()
 @st.cache_data(ttl=900)
 def generar_resumen_ia(total, inscripcion, info, hombres, mujeres, fecha_ini, fecha_fin):
     genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-    modelo = genai.GenerativeModel("gemini-2.0-flash")
+    modelo = genai.GenerativeModel("gemini-1.5-flash")
     pct = lambda n: f"{n/total*100:.1f}%" if total else "N/D"
     prompt = (
         f"Eres un analista de datos. Escribe un resumen ejecutivo breve (2-3 oraciones) "
