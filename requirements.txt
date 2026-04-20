@@ -6,6 +6,7 @@ numpy
 names-dataset
 sqlalchemy
 pymysql
-sshtunnel
+paramiko==2.11.0
+sshtunnel==0.4.0
 python-dotenv
 git+https://github.com/claudiodanielpc-ag/cd_base.git
