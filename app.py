@@ -3,7 +3,7 @@ import tempfile
 import warnings
 warnings.filterwarnings('ignore')
 
-import google.generativeai as genai
+import anthropic
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
@@ -133,19 +133,22 @@ mujeres = (df_f['sexo'] == 'Mujer').sum()
 
 @st.cache_data(ttl=900)
 def generar_resumen_ia(total, inscripcion, info, hombres, mujeres, fecha_ini, fecha_fin):
-    genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-    modelo = genai.GenerativeModel("gemini-2.5-flash")
+    client = anthropic.Anthropic(api_key=st.secrets["ANTHROPIC_API_KEY"])
     pct = lambda n: f"{n/total*100:.1f}%" if total else "N/D"
-    prompt = (
-        f"Eres un analista de datos. Escribe un resumen ejecutivo breve (2-3 oraciones) "
-        f"en español sobre los leads de Afore Coppel del {fecha_ini} al {fecha_fin}:\n"
-        f"- Total leads: {total}\n"
-        f"- Interesados en inscripción: {inscripcion} ({pct(inscripcion)})\n"
-        f"- Solicitan información: {info} ({pct(info)})\n"
-        f"- Hombres: {hombres} ({pct(hombres)}), Mujeres: {mujeres} ({pct(mujeres)})\n"
-        "Sé directo y profesional. No uses listas, solo prosa."
+    msg = client.messages.create(
+        model="claude-haiku-4-5-20251001",
+        max_tokens=200,
+        messages=[{"role": "user", "content": (
+            f"Eres un analista de datos. Escribe un resumen ejecutivo breve (2-3 oraciones) "
+            f"en español sobre los leads de Afore Coppel del {fecha_ini} al {fecha_fin}:\n"
+            f"- Total leads: {total}\n"
+            f"- Interesados en inscripción: {inscripcion} ({pct(inscripcion)})\n"
+            f"- Solicitan información: {info} ({pct(info)})\n"
+            f"- Hombres: {hombres} ({pct(hombres)}), Mujeres: {mujeres} ({pct(mujeres)})\n"
+            "Sé directo y profesional. No uses listas, solo prosa."
+        )}]
     )
-    return modelo.generate_content(prompt).text
+    return msg.content[0].text
 
 with resumen_placeholder.container():
     with st.spinner("Generando resumen..."):
