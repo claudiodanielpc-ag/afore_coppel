@@ -1,0 +1,6 @@
+.streamlit/secrets.toml
+*.pem
+*.txt
+!requirements.txt
+__pycache__/
+.env

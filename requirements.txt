@@ -1,0 +1,11 @@
+streamlit
+pandas
+plotly
+statsmodels
+numpy
+names-dataset
+sqlalchemy
+pymysql
+sshtunnel
+python-dotenv
+git+https://github.com/claudiodanielpc-ag/cd_base.git
