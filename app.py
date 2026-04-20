@@ -378,21 +378,31 @@ st.info(
 
 tasa_requerida_actual = META / total_obs * 100 if total_obs else None
 
-st.metric(
+_, cm, _ = st.columns([1, 1, 1])
+cm.metric(
     "Tasa de conversión requerida para alcanzar la meta",
     f"{tasa_requerida_actual:.1f}%" if tasa_requerida_actual else "—",
 )
 
-ESCENARIOS = [("Pesimista", 0.10), ("Base", 0.25), ("Optimista", 0.40)]
-etiquetas = [f"{e[0]} ({int(e[1]*100)}%)" for e in ESCENARIOS]
-inscritos_actual = [total_obs * t for _, t in ESCENARIOS]
+st.markdown("**Ajusta las tasas de cada escenario:**")
+cs1, cs2, cs3 = st.columns(3)
+with cs1:
+    tasa_p = st.slider("Pesimista (%)", 1, 100, 10)
+with cs2:
+    tasa_b = st.slider("Base (%)", 1, 100, 25)
+with cs3:
+    tasa_o = st.slider("Optimista (%)", 1, 100, 40)
+
+etiquetas        = [f"Pesimista ({tasa_p}%)", f"Base ({tasa_b}%)", f"Optimista ({tasa_o}%)"]
+inscritos_esc    = [total_obs * tasa_p/100, total_obs * tasa_b/100, total_obs * tasa_o/100]
+colores          = ['steelblue', 'mediumseagreen', 'tomato']
 
 fig_esc = go.Figure(go.Bar(
     y=etiquetas,
-    x=inscritos_actual,
+    x=inscritos_esc,
     orientation='h',
-    marker_color='steelblue',
-    text=[f"{v:.0f}" for v in inscritos_actual],
+    marker_color=colores,
+    text=[f"{v:.0f}" for v in inscritos_esc],
     textposition='outside',
 ))
 fig_esc.add_vline(
@@ -404,6 +414,7 @@ fig_esc.add_vline(
 )
 fig_esc.update_layout(
     xaxis_title="Inscritos estimados",
+    xaxis=dict(range=[0, max(max(inscritos_esc) * 1.2, META * 1.1)]),
     height=300,
     margin=dict(t=30, b=10, r=80),
     showlegend=False,
