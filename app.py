@@ -143,19 +143,21 @@ mujeres = (df_f['sexo'] == 'Mujer').sum()
 
 @st.cache_data(ttl=900)
 def generar_resumen_ia(total, inscripcion, info, hombres, mujeres,
-                       fecha_ini, fecha_fin, total_obs, total_est, incremento):
+                       fecha_ini, fecha_fin, total_obs, total_est, incremento, pen_actual):
     client = anthropic.Anthropic(api_key=st.secrets["ANTHROPIC_API_KEY"])
     pct = lambda n: f"{n/total*100:.1f}%" if total else "N/D"
     msg = client.messages.create(
         model="claude-haiku-4-5-20251001",
-        max_tokens=250,
+        max_tokens=280,
         messages=[{"role": "user", "content": (
             f"Eres un analista de datos. Escribe un resumen ejecutivo breve (2-3 oraciones) "
-            f"en español sobre los leads de Afore Coppel del {fecha_ini} al {fecha_fin}:\n"
-            f"- Total leads: {total}\n"
+            f"en español sobre los leads de Afore Coppel del {fecha_ini} al {fecha_fin}. "
+            f"Todos los registros son únicos (se omitieron duplicados por correo electrónico):\n"
+            f"- Total registros únicos: {total}\n"
             f"- Interesados en inscripción: {inscripcion} ({pct(inscripcion)})\n"
             f"- Solicitan información: {info} ({pct(info)})\n"
             f"- Hombres: {hombres} ({pct(hombres)}), Mujeres: {mujeres} ({pct(mujeres)})\n"
+            f"- Tasa de contacto única sobre población potencial: {pen_actual:.3f}%\n"
             f"- Correos acumulados con intención de inscripción: {total_obs:.0f}\n"
             f"- Proyección ARIMA a 48h: {total_est:.0f} (incremento esperado: +{incremento:.0f})\n"
             "Sé directo y neutral. No uses listas, solo prosa. "
@@ -262,19 +264,22 @@ fig_pen = go.Figure(go.Scatter(
 ))
 fig_pen.update_layout(
     xaxis_title="Hora",
-    yaxis_title="% de población potencial alcanzada",
+    yaxis_title="Tasa de contacto única (%)",
     height=360,
     margin=dict(t=10, b=10),
 )
 st.plotly_chart(fig_pen, use_container_width=True)
 
-st.caption(f"Población potencial: {POBLACION_POTENCIAL:,} afiliados · (registros acumulados / {POBLACION_POTENCIAL:,}) × 100")
+st.caption(
+    f"Población potencial: {POBLACION_POTENCIAL:,} afiliados · Fórmula: (registros acumulados / {POBLACION_POTENCIAL:,}) × 100  \n"
+    "**Nota:** La tasa se calcula sobre registros únicos; se omitió un registro por cada correo electrónico duplicado."
+)
 
 st.divider()
 
 # ── Proyección ARIMA ──────────────────────────────────────────────────
 
-st.subheader("Correos acumulados manifestando interés en inscribirse — ARIMA(1,1,0)")
+st.subheader("Interesados únicos acumulados — ARIMA(1,1,0)")
 
 df_arima = df[df['interesado_en'] == 'Iniciar Proceso de inscripción'].copy()
 por_hora_ac = (
@@ -307,7 +312,7 @@ with resumen_placeholder.container():
     with st.spinner("Generando resumen..."):
         resumen = generar_resumen_ia(
             total_g, inscripcion_g, info_g, hombres_g, mujeres_g,
-            fecha_min, fecha_max, total_obs, total_est, incremento,
+            fecha_min, fecha_max, total_obs, total_est, incremento, pen_actual,
         )
     st.info(f"### **Resumen ejecutivo ({fmt_fecha(fecha_min)} — {fmt_fecha(fecha_max)})**\n\n{resumen}")
 
