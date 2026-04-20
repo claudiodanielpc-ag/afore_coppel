@@ -9,4 +9,5 @@ pymysql
 paramiko==2.11.0
 sshtunnel==0.4.0
 python-dotenv
+anthropic
 git+https://github.com/claudiodanielpc-ag/cd_base.git
