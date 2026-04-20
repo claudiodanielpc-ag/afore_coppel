@@ -312,3 +312,45 @@ st.caption(
     "**Nota:** Los correos contabilizados reflejan intención de inscripción manifestada por el usuario, "
     "no inscripciones efectivas confirmadas. El número real de alumnos inscritos puede diferir."
 )
+
+st.divider()
+
+# ── Penetración de población potencial ───────────────────────────────
+
+POBLACION_POTENCIAL = 462_592
+
+st.subheader("Penetración de la población potencial")
+
+por_hora_pen = (
+    df.set_index('created_at')
+    .resample('h')
+    .size()
+    .rename('registros')
+    .to_frame()
+)
+por_hora_pen['acumulado'] = por_hora_pen['registros'].cumsum()
+por_hora_pen['penetracion'] = por_hora_pen['acumulado'] / POBLACION_POTENCIAL * 100
+
+pen_actual = por_hora_pen['penetracion'].iloc[-1]
+
+cp1, cp2 = st.columns(2)
+cp1.metric("Registros acumulados", f"{int(por_hora_pen['acumulado'].iloc[-1]):,}")
+cp2.metric("Penetración actual", f"{pen_actual:.3f}%")
+
+fig_pen = go.Figure(go.Scatter(
+    x=por_hora_pen.index,
+    y=por_hora_pen['penetracion'],
+    mode='lines+markers',
+    line=dict(color='mediumseagreen', width=2),
+    marker=dict(size=5),
+    hovertemplate='%{x}<br>%{y:.4f}%<extra></extra>',
+))
+fig_pen.update_layout(
+    xaxis_title="Hora",
+    yaxis_title="% de población potencial alcanzada",
+    height=360,
+    margin=dict(t=10, b=10),
+)
+st.plotly_chart(fig_pen, use_container_width=True)
+
+st.caption(f"Población potencial: {POBLACION_POTENCIAL:,} afiliados · (registros acumulados / {POBLACION_POTENCIAL:,}) × 100")
