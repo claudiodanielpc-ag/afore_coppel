@@ -143,12 +143,12 @@ mujeres = (df_f['sexo'] == 'Mujer').sum()
 
 @st.cache_data(ttl=900)
 def generar_resumen_ia(total, inscripcion, info, hombres, mujeres,
-                       fecha_ini, fecha_fin, total_obs, total_est, incremento, pen_actual):
+                       fecha_ini, fecha_fin, total_obs, total_est, incremento, pen_actual, tasa_requerida):
     client = anthropic.Anthropic(api_key=st.secrets["ANTHROPIC_API_KEY"])
     pct = lambda n: f"{n/total*100:.1f}%" if total else "N/D"
     msg = client.messages.create(
         model="claude-haiku-4-5-20251001",
-        max_tokens=280,
+        max_tokens=300,
         messages=[{"role": "user", "content": (
             f"Eres un analista de datos. Escribe un resumen ejecutivo breve (2-3 oraciones) "
             f"en español sobre los leads de Afore Coppel del {fecha_ini} al {fecha_fin}. "
@@ -160,6 +160,7 @@ def generar_resumen_ia(total, inscripcion, info, hombres, mujeres,
             f"- Tasa de contacto única sobre población potencial: {pen_actual:.3f}%\n"
             f"- Correos acumulados con intención de inscripción: {total_obs:.0f}\n"
             f"- Proyección ARIMA a 48h: {total_est:.0f} (incremento esperado: +{incremento:.0f})\n"
+            f"- Tasa de conversión requerida para alcanzar la meta de 1,000 inscritos: {tasa_requerida:.1f}%\n"
             "Sé directo y neutral. No uses listas, solo prosa. "
             "Evita adjetivos calificativos (como 'significativo', 'notable', 'alto', 'bajo', etc.). "
             "Limítate a enunciar los resultados sin valorarlos. "
@@ -308,11 +309,13 @@ info_g = (df['interesado_en'] == 'Solicitar Información').sum()
 hombres_g = (df['sexo'] == 'Hombre').sum()
 mujeres_g = (df['sexo'] == 'Mujer').sum()
 
+tasa_req = (1_000 / total_obs * 100) if total_obs else 0
+
 with resumen_placeholder.container():
     with st.spinner("Generando resumen..."):
         resumen = generar_resumen_ia(
             total_g, inscripcion_g, info_g, hombres_g, mujeres_g,
-            fecha_min, fecha_max, total_obs, total_est, incremento, pen_actual,
+            fecha_min, fecha_max, total_obs, total_est, incremento, pen_actual, tasa_req,
         )
     st.info(f"### **Resumen ejecutivo ({fmt_fecha(fecha_min)} — {fmt_fecha(fecha_max)})**\n\n{resumen}")
 
@@ -376,16 +379,18 @@ st.info(
     "La tasa requerida es el valor mínimo que necesitaría alcanzarse para llegar a la meta de 1,000 inscritos."
 )
 
-tasa_requerida_actual = META / total_obs * 100 if total_obs else None
-
-_, cm, _ = st.columns([1, 1, 1])
-cm.metric(
-    "Tasa de conversión requerida para alcanzar la meta",
-    f"{tasa_requerida_actual:.1f}%" if tasa_requerida_actual else "—",
-)
-
 tasa_slider = st.slider("Tasa de conversión (%)", 1, 100, 25)
 inscritos_slider = total_obs * tasa_slider / 100
+contactos_necesarios = int(np.ceil(META / (tasa_slider / 100)))
+
+_, cm1, cm2, _ = st.columns([1, 1, 1, 1])
+cm1.metric("Inscritos estimados", f"{inscritos_slider:.0f}")
+cm2.metric(
+    f"Contactos con intención necesarios (al {tasa_slider}%)",
+    f"{contactos_necesarios:,}",
+    delta=f"{contactos_necesarios - int(total_obs):+,} vs. actual",
+    delta_color="inverse",
+)
 color_barra = 'mediumseagreen' if inscritos_slider >= META else 'steelblue'
 
 fig_esc = go.Figure(go.Bar(
