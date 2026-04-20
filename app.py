@@ -4,7 +4,6 @@ import warnings
 warnings.filterwarnings('ignore')
 
 import anthropic
-import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
@@ -160,7 +159,8 @@ def generar_resumen_ia(total, inscripcion, info, hombres, mujeres,
             f"- Tasa de contacto única sobre población potencial: {pen_actual:.3f}%\n"
             f"- Correos acumulados con intención de inscripción: {total_obs:.0f}\n"
             f"- Proyección ARIMA a 48h: {total_est:.0f} (incremento esperado: +{incremento:.0f})\n"
-            f"- Tasa de conversión requerida para alcanzar la meta de 1,000 inscritos: {tasa_requerida:.1f}%\n"
+            f"- Actualmente {int(total_obs)} contactos únicos han manifestado intención de inscribirse; "
+            f"para alcanzar la meta de 1,000 inscritos, la tasa de conversión tendría que ser de {tasa_requerida:.1f}%.\n"
             "Sé directo y neutral. No uses listas, solo prosa. "
             "Evita adjetivos calificativos (como 'significativo', 'notable', 'alto', 'bajo', etc.). "
             "Limítate a enunciar los resultados sin valorarlos. "
@@ -379,18 +379,14 @@ st.info(
     "La tasa requerida es el valor mínimo que necesitaría alcanzarse para llegar a la meta de 1,000 inscritos."
 )
 
+_, cm, _ = st.columns([1, 1, 1])
+cm.metric(
+    "Tasa de conversión requerida para alcanzar la meta",
+    f"{tasa_req:.1f}%",
+)
+
 tasa_slider = st.slider("Tasa de conversión (%)", 1, 100, 25)
 inscritos_slider = total_obs * tasa_slider / 100
-contactos_necesarios = int(np.ceil(META / (tasa_slider / 100)))
-
-_, cm1, cm2, _ = st.columns([1, 1, 1, 1])
-cm1.metric("Inscritos estimados", f"{inscritos_slider:.0f}")
-cm2.metric(
-    f"Contactos con intención necesarios (al {tasa_slider}%)",
-    f"{contactos_necesarios:,}",
-    delta=f"{contactos_necesarios - int(total_obs):+,} vs. actual",
-    delta_color="inverse",
-)
 color_barra = 'mediumseagreen' if inscritos_slider >= META else 'steelblue'
 
 fig_esc = go.Figure(go.Bar(
