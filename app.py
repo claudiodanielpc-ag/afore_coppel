@@ -272,7 +272,7 @@ st.plotly_chart(fig_pen, use_container_width=True)
 
 st.caption(
     f"Población potencial: {POBLACION_POTENCIAL:,} afiliados · Fórmula: (registros acumulados / {POBLACION_POTENCIAL:,}) × 100  \n"
-    "**Nota:** La tasa se calcula sobre registros únicos; se omitió un registro por cada correo electrónico duplicado."
+    "**Nota:** La tasa se calcula sobre registros únicos."
 )
 
 st.divider()
@@ -358,4 +358,73 @@ st.caption(
     f"Modelo ARIMA(1,1,0) · Datos desde {fecha_min} · Caché: 15 min  \n"
     "**Nota:** Los correos contabilizados reflejan intención de inscripción manifestada por el usuario, "
     "no inscripciones efectivas confirmadas. El número real de alumnos inscritos puede diferir."
+)
+
+st.divider()
+
+# ── Escenarios de conversión ──────────────────────────────────────────
+
+META = 1_000
+
+st.subheader("Escenarios de conversión — meta: 1,000 inscritos")
+
+tasa_requerida_actual    = META / total_obs * 100 if total_obs else None
+tasa_requerida_proyectad = META / total_est * 100 if total_est else None
+
+ce1, ce2 = st.columns(2)
+ce1.metric(
+    "Tasa requerida (actual)",
+    f"{tasa_requerida_actual:.1f}%" if tasa_requerida_actual else "—",
+    help="Tasa de conversión necesaria sobre los contactos únicos actuales para llegar a 1,000 inscritos",
+)
+ce2.metric(
+    "Tasa requerida (+48h ARIMA)",
+    f"{tasa_requerida_proyectad:.1f}%" if tasa_requerida_proyectad else "—",
+    help="Tasa de conversión necesaria sobre la proyección a 48h para llegar a 1,000 inscritos",
+)
+
+ESCENARIOS = [("Pesimista", 0.10), ("Base", 0.25), ("Optimista", 0.40)]
+nombres   = [e[0] for e in ESCENARIOS]
+etiquetas = [f"{e[0]} ({int(e[1]*100)}%)" for e in ESCENARIOS]
+inscritos_actual = [total_obs * t for _, t in ESCENARIOS]
+inscritos_proj   = [total_est  * t for _, t in ESCENARIOS]
+
+fig_esc = go.Figure()
+fig_esc.add_trace(go.Bar(
+    y=etiquetas,
+    x=inscritos_actual,
+    name="Actual",
+    orientation='h',
+    marker_color='steelblue',
+    text=[f"{v:.0f}" for v in inscritos_actual],
+    textposition='outside',
+))
+fig_esc.add_trace(go.Bar(
+    y=etiquetas,
+    x=inscritos_proj,
+    name="Proyección +48h",
+    orientation='h',
+    marker_color='tomato',
+    text=[f"{v:.0f}" for v in inscritos_proj],
+    textposition='outside',
+))
+fig_esc.add_vline(
+    x=META,
+    line_dash='dash',
+    line_color='gold',
+    annotation_text=f"Meta: {META:,}",
+    annotation_position="top",
+)
+fig_esc.update_layout(
+    barmode='group',
+    xaxis_title="Inscritos estimados",
+    height=320,
+    margin=dict(t=30, b=10, r=80),
+    legend=dict(orientation='h', yanchor='bottom', y=1.02, xanchor='left', x=0),
+)
+st.plotly_chart(fig_esc, use_container_width=True)
+
+st.caption(
+    "Los escenarios aplican la tasa de conversión sobre los contactos únicos con intención de inscripción. "
+    "No representan inscripciones confirmadas."
 )
