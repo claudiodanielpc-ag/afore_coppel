@@ -139,6 +139,7 @@ inscripcion = (df_f['interesado_en'] == 'Iniciar Proceso de inscripción').sum()
 info = (df_f['interesado_en'] == 'Solicitar Información').sum()
 hombres = (df_f['sexo'] == 'Hombre').sum()
 mujeres = (df_f['sexo'] == 'Mujer').sum()
+indeterminado = (df_f['sexo'] == 'Indeterminado').sum()
 
 @st.cache_data(ttl=900)
 def generar_resumen_ia(total, inscripcion, info, hombres, mujeres,
@@ -169,12 +170,13 @@ def generar_resumen_ia(total, inscripcion, info, hombres, mujeres,
     )
     return msg.content[0].text
 
-c1, c2, c3, c4, c5 = st.columns(5)
+c1, c2, c3, c4, c5, c6 = st.columns(6)
 c1.metric("Total interesados", total)
 c2.metric("Proceso de inscripción", inscripcion, f"{inscripcion/total*100:.1f}%" if total else "—")
 c3.metric("Solicitar información", info, f"{info/total*100:.1f}%" if total else "—")
 c4.metric("Hombres", hombres, f"{hombres/total*100:.1f}%" if total else "—")
 c5.metric("Mujeres", mujeres, f"{mujeres/total*100:.1f}%" if total else "—")
+c6.metric("No determinado", indeterminado, f"{indeterminado/total*100:.1f}%" if total else "—")
 
 st.divider()
 
