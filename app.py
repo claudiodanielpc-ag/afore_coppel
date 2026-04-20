@@ -31,7 +31,7 @@ col_logo, col_titulo = st.columns([1, 5])
 with col_logo:
     st.image("logo_ag_transp.png", width=180)
 with col_titulo:
-    st.title("Resultados preliminares de interesados en oferta académica Academia Global — Afore Coppel")
+    st.title("Resultados preliminares de interesados en oferta académica\nAcademia Global — Afore Coppel")
 
 resumen_placeholder = st.empty()
 
