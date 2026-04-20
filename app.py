@@ -31,7 +31,11 @@ col_logo, col_titulo = st.columns([1, 5])
 with col_logo:
     st.image("logo_ag_transp.png", width=180)
 with col_titulo:
-    st.title("Resultados preliminares de interesados en oferta académica Academia Global — Afore Coppel")
+    st.markdown(
+        "<h1 style='line-height:1.2'>Resultados preliminares de interesados en oferta académica<br>"
+        "Academia Global — Afore Coppel</h1>",
+        unsafe_allow_html=True,
+    )
 
 resumen_placeholder = st.empty()
 
@@ -106,6 +110,12 @@ if st.button("🔄 Actualizar datos"):
     st.rerun()
 
 st.divider()
+
+_MESES = ['enero','febrero','marzo','abril','mayo','junio',
+          'julio','agosto','septiembre','octubre','noviembre','diciembre']
+
+def fmt_fecha(d):
+    return f"{d.day} de {_MESES[d.month - 1]} de {d.year}"
 
 # ── Filtro de fechas ─────────────────────────────────────────────────
 
@@ -257,7 +267,7 @@ with resumen_placeholder.container():
             total_g, inscripcion_g, info_g, hombres_g, mujeres_g,
             fecha_min, fecha_max, total_obs, total_est, incremento,
         )
-    st.info(f"### **Resumen ejecutivo ({fecha_min} — {fecha_max})**\n\n{resumen}")
+    st.info(f"### **Resumen ejecutivo ({fmt_fecha(fecha_min)} — {fmt_fecha(fecha_max)})**\n\n{resumen}")
 
 ca1, ca2, ca3 = st.columns(3)
 ca1.metric("Acumulado actual", f"{total_obs:.0f}")
