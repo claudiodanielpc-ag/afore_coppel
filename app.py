@@ -150,7 +150,8 @@ def generar_resumen_ia(total, inscripcion, info, hombres, mujeres,
             f"- Proyección ARIMA a 48h: {total_est:.0f} (incremento esperado: +{incremento:.0f})\n"
             "Sé directo y neutral. No uses listas, solo prosa. "
             "Evita adjetivos calificativos (como 'significativo', 'notable', 'alto', 'bajo', etc.). "
-            "Limítate a enunciar los resultados sin valorarlos."
+            "Limítate a enunciar los resultados sin valorarlos. "
+            "No incluyas título ni encabezado, solo el párrafo."
         )}]
     )
     return msg.content[0].text
@@ -251,13 +252,12 @@ hombres_g = (df['sexo'] == 'Hombre').sum()
 mujeres_g = (df['sexo'] == 'Mujer').sum()
 
 with resumen_placeholder.container():
-    st.subheader(f"Resumen ejecutivo ({fecha_min} — {fecha_max})")
     with st.spinner("Generando resumen..."):
         resumen = generar_resumen_ia(
             total_g, inscripcion_g, info_g, hombres_g, mujeres_g,
             fecha_min, fecha_max, total_obs, total_est, incremento,
         )
-    st.info(resumen)
+    st.info(f"**Resumen ejecutivo ({fecha_min} — {fecha_max})**\n\n{resumen}")
 
 ca1, ca2, ca3 = st.columns(3)
 ca1.metric("Acumulado actual", f"{total_obs:.0f}")
