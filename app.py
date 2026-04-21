@@ -246,7 +246,7 @@ POBLACION_POTENCIAL = 462_592
 st.subheader("Tasa de contacto única")
 
 por_hora_pen = (
-    df.set_index('created_at')
+    df_f.set_index('created_at')
     .resample('h')
     .size()
     .rename('registros')
@@ -288,7 +288,7 @@ st.divider()
 
 st.subheader("Interesados únicos acumulados — ARIMA(1,1,0)")
 
-df_arima = df[df['interesado_en'] == 'Iniciar Proceso de inscripción'].copy()
+df_arima = df_f[df_f['interesado_en'] == 'Iniciar Proceso de inscripción'].copy()
 por_hora_ac = (
     df_arima
     .set_index('created_at')
@@ -309,21 +309,15 @@ total_obs = por_hora_ac['acumulado'].iloc[-1]
 total_est = pred_mean.iloc[-1]
 incremento = total_est - total_obs
 
-total_g = len(df)
-inscripcion_g = (df['interesado_en'] == 'Iniciar Proceso de inscripción').sum()
-info_g = (df['interesado_en'] == 'Solicitar Información').sum()
-hombres_g = (df['sexo'] == 'Hombre').sum()
-mujeres_g = (df['sexo'] == 'Mujer').sum()
-
 tasa_req = (1_000 / total_obs * 100) if total_obs else 0
 
 with resumen_placeholder.container():
     with st.spinner("Generando resumen..."):
         resumen = generar_resumen_ia(
-            total_g, inscripcion_g, info_g, hombres_g, mujeres_g,
-            fecha_min, fecha_max, total_obs, total_est, incremento, pen_actual, tasa_req,
+            total, inscripcion, info, hombres, mujeres,
+            fecha_inicio, fecha_fin, total_obs, total_est, incremento, pen_actual, tasa_req,
         )
-    st.info(f"### **Resumen ejecutivo ({fmt_fecha(fecha_min)} — {fmt_fecha(fecha_max)})**\n\n{resumen}")
+    st.info(f"### **Resumen ejecutivo ({fmt_fecha(fecha_inicio)} — {fmt_fecha(fecha_fin)})**\n\n{resumen}")
 
 ca1, ca2, ca3 = st.columns(3)
 ca1.metric("Acumulado actual", f"{total_obs:.0f}")
