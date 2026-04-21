@@ -96,6 +96,7 @@ def load_data():
     df['correo'] = df['correo'].str.strip()
     df = df.drop_duplicates(subset='correo', keep='first').reset_index(drop=True)
     df['sexo'] = df['nombre'].apply(lambda x: inferir_sexo(x, nd))
+    df = df[~df['nombre'].isin(['1', 'prdf'])].reset_index(drop=True)
     return df
 
 
