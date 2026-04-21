@@ -119,17 +119,14 @@ def fmt_fecha(d):
 
 # ── Filtro de fechas ─────────────────────────────────────────────────
 
-from datetime import date as _date
-
 fecha_min = df['created_at'].dt.date.min()
 fecha_max = df['created_at'].dt.date.max()
-hoy = _date.today()
 
 col_f1, col_f2, _ = st.columns([1, 1, 3])
 with col_f1:
-    fecha_inicio = st.date_input("Desde", value=fecha_min, min_value=fecha_min, max_value=hoy)
+    fecha_inicio = st.date_input("Desde", value=fecha_min, min_value=fecha_min, max_value=fecha_max)
 with col_f2:
-    fecha_fin = st.date_input("Hasta", value=hoy, min_value=fecha_min, max_value=hoy)
+    fecha_fin = st.date_input("Hasta", value=fecha_max, min_value=fecha_min, max_value=fecha_max)
 
 df_f = df[
     (df['created_at'].dt.date >= fecha_inicio) &
